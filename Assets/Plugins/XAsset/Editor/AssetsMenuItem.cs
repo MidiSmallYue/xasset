@@ -46,6 +46,7 @@ namespace Plugins.XAsset.Editor
         [InitializeOnLoadMethod]
         private static void OnInitialize()
         {
+            Debug.Log("test");
             EditorUtility.ClearProgressBar();
             var settings = BuildScript.GetSettings(); 
             if (settings.localServer)
@@ -53,6 +54,7 @@ namespace Plugins.XAsset.Editor
                 bool isRunning = LaunchLocalServer.IsRunning();
                 if (!isRunning)
                 {
+                    Debug.Log("run server");
                     LaunchLocalServer.Run();
                 }
             }
@@ -62,13 +64,15 @@ namespace Plugins.XAsset.Editor
                 if (isRunning)
                 {
                     LaunchLocalServer.KillRunningAssetBundleServer();
+                    Debug.Log("close server");
                 }
             }
-            Utility.dataPath = System.Environment.CurrentDirectory;
+            //Utility.dataPath = System.Environment.CurrentDirectory;
             Utility.downloadURL = BuildScript.GetManifest().downloadURL;
             Utility.assetBundleMode = settings.runtimeMode;
             Utility.getPlatformDelegate = BuildScript.GetPlatformName;
             Utility.loadDelegate = AssetDatabase.LoadAssetAtPath;
+            assetRootPath = settings.assetRootPath;
         }
 
         public static string TrimedAssetBundleName(string assetBundleName)

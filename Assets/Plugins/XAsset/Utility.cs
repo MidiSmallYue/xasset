@@ -75,6 +75,10 @@ namespace Plugins.XAsset
             }
         }
 
+        /// <summary>
+        /// 可读写路径，已经带 平台前缀
+        /// </summary>
+        /// <value></value>
         public static string updatePath
         {
             get
@@ -84,16 +88,31 @@ namespace Plugins.XAsset
             }
         }
 
+        /// <summary>
+        /// 获取可更新目录 路径
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public static string GetRelativePath4Update(string path)
         {
             return updatePath + path;
         }
 
+        /// <summary>
+        /// 获取远程下载 路径
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
         public static string GetDownloadURL(string filename)
         {
             return Path.Combine(Path.Combine(downloadURL, GetPlatform()), filename);
         }
 
+        /// <summary>
+        /// 获取本地 StreamingAssets 路径，（或者当前项目路径，需要在 AssetsMenuItem修改）
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
         public static string GetWebUrlFromDataPath(string filename)
         {
             var path = Path.Combine(dataPath, Path.Combine(AssetBundles, GetPlatform())) + Path.DirectorySeparatorChar + filename;
@@ -105,6 +124,11 @@ namespace Plugins.XAsset
             return path;
         }
 
+        /// <summary>
+        /// 先从可读写路径中获取文件，路径不存在就从 StreamingAssets 中获取
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
         public static string GetWebUrlFromStreamingAssets(string filename)
         {
             var path = updatePath + filename;

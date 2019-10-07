@@ -77,6 +77,9 @@ namespace Plugins.XAsset
             return version;
         }
 
+        /// <summary>
+        /// 保存了每次下载文件的内容
+        /// </summary>
         public static void Save()
         {
             var path = Utility.updatePath + versionFile;

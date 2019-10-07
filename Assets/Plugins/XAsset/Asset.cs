@@ -81,6 +81,8 @@ namespace Plugins.XAsset
 
         public Object asset { get; internal set; }
 
+        private FairyGUI.UIPackage uiPackage;
+
         private bool checkRequires
         {
             get { return _requires != null; }
@@ -129,8 +131,18 @@ namespace Plugins.XAsset
         [Conditional("UNITY_EDITOR")]
         private void _Load()
         {
-            if (Utility.loadDelegate != null)
-                asset = Utility.loadDelegate(name, assetType);
+            Log("Editor load-> " + name);
+            if (assetType == typeof(FairyGUI.UIPackage))
+            {
+                uiPackage = FairyGUI.UIPackage.AddPackage(name);
+            }
+            else
+            {
+                if (Utility.loadDelegate != null)
+                {
+                    asset = Utility.loadDelegate(name, assetType);
+                }
+            }
         }
 
         [Conditional("UNITY_EDITOR")]
@@ -138,15 +150,31 @@ namespace Plugins.XAsset
         {
             if (asset == null)
                 return;
-            if (!(asset is GameObject))
-                Resources.UnloadAsset(asset);
-
-            asset = null;
+            Log("Editor Unload-> " + name);
+            if (assetType == typeof(FairyGUI.UIPackage))
+            {
+                FairyGUI.UIPackage.RemovePackage(uiPackage.id);
+                uiPackage = null;
+            }
+            else
+            {
+                if (!(asset is GameObject))
+                {
+                    Resources.UnloadAsset(asset);
+                }
+                asset = null;
+            }
         }
 
         internal virtual void Unload()
         {
             _Unload();
+        }
+
+        [Conditional("LOG_ENABLE")]
+        private static void Log(string s)
+        {
+            UnityEngine.Debug.Log(string.Format("[Test]{0}", s));
         }
 
         internal bool Update()
@@ -166,12 +194,20 @@ namespace Plugins.XAsset
                 Debug.LogException(ex);
             }
 
+            if (unLoadCompleted == null)
+            {
+
+            }
+
             completed = null;
             return false;
         }
 
         // ReSharper disable once InconsistentNaming
         public event Action<Asset> completed;
+
+        //卸载完成方法
+        public Action unLoadCompleted;
 
         #region IEnumerator implementation
 

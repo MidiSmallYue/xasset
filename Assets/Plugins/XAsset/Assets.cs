@@ -67,12 +67,16 @@ namespace Plugins.XAsset
             if (Utility.assetBundleMode)
             {
                 updatePath = Utility.updatePath;
+                Log(string.Format("Init->updatePath {0}", updatePath));
                 var platform = Utility.GetPlatform();
+                Log(string.Format("Init->platform {0}", platform));
                 var path = Path.Combine(Utility.dataPath, Path.Combine(Utility.AssetBundles, platform)) +
                            Path.DirectorySeparatorChar;
+                Log(string.Format("Init->bundle path {0}", path));
                 Bundles.OverrideBaseDownloadingUrl += Bundles_overrideBaseDownloadingURL;
                 Bundles.Initialize(path, platform, () =>
                 {
+                    //加载自定义的 manifest 文件
                     var asset = LoadAsync(Utility.AssetsManifestAsset, typeof(AssetsManifest));
                     asset.completed += obj =>
                     {
@@ -92,6 +96,7 @@ namespace Plugins.XAsset
                         for (int i = 0, max = manifest.assets.Length; i < max; i++)
                         {
                             var item = manifest.assets[i];
+                            //记录所有文件 所属的bundle 的映射
                             _bundleAssets[string.Format("{0}/{1}", dirs[item.dir], item.name)] = item.bundle;
                         }
 
@@ -166,7 +171,9 @@ namespace Plugins.XAsset
             for (var i = 0; i < _assets.Count; i++)
             {
                 var item = _assets[i];
-                if (item.Update() || !item.IsUnused())
+                bool result1 = item.Update();
+                bool result2 = item.IsUnused();
+                if (result1 || !result2)
                     continue;
                 _unusedAssets.Add(item);
                 _assets.RemoveAt(i);
@@ -236,7 +243,7 @@ namespace Plugins.XAsset
             return asset;
         }
 
-        private static bool GetAssetBundleName(string path, out string assetBundleName)
+        public static bool GetAssetBundleName(string path, out string assetBundleName)
         {
             if (path.Equals(Utility.AssetsManifestAsset))
             {
@@ -254,7 +261,7 @@ namespace Plugins.XAsset
 
         private static string Bundles_overrideBaseDownloadingURL(string bundleName)
         {
-            return !File.Exists(Path.Combine(updatePath, bundleName)) ? null : updatePath;
+            return File.Exists(Path.Combine(updatePath, bundleName)) ? updatePath : null;
         }
     }
 }

@@ -60,6 +60,7 @@ namespace Plugins.XAsset
 			return manifest == null ? null : manifest.GetAllDependencies (bundle);
 		}
 
+		//加载对应平台的bundle
 		public static void Initialize (string path, string platform, Action onSuccess, Action<string> onError)
 		{
 			dataPath = path;

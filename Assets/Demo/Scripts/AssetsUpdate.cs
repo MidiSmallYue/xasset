@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using UnityEngine;
@@ -51,12 +52,21 @@ namespace Plugins.XAsset
 
         public Action<string> onError;
 
+        //本地版本文件内容
         private Dictionary<string, string> _versions = new Dictionary<string, string>();
+
+        //远程版本文件内容
         private Dictionary<string, string> _serverVersions = new Dictionary<string, string>();
         private readonly List<Download> _downloads = new List<Download>();
         private int _downloadIndex;
 
-		[SerializeField] string versionsTxt = "versions.txt";
+        [SerializeField] string versionsTxt = "versions.txt";
+
+        private string fguiPath = "Demo/FUI/UI/Model";
+        private List<FairyGUI.GObject> fguiObjs = new List<FairyGUI.GObject>();
+        private ETModel.FUIPackageComponent fuiPackageComponent;
+        private ETModel.FUIComponent fuiComponent;
+
 
         private void OnError(string e)
         {
@@ -73,7 +83,8 @@ namespace Plugins.XAsset
 
         void OnProgress(string arg1, float arg2)
         {
-            message = string.Format("{0:F0}%:{1}({2}/{3})", arg2 * 100, arg1, _downloadIndex, _downloads.Count);
+            message = string.Format("下载进度 {0:F0}%:{1}({2}/{3})", arg2 * 100, arg1, _downloadIndex, _downloads.Count);
+            Log(message);
         }
 
         void Clear()
@@ -91,20 +102,30 @@ namespace Plugins.XAsset
             message = "click Check to start.";
             state = State.Wait;
 
-            Versions.Clear(); 
+            Versions.Clear();
 
             var path = Utility.updatePath + Versions.versionFile;
             if (File.Exists(path))
                 File.Delete(path);
         }
 
+        [Conditional("LOG_ENABLE")]
+        private static void Log(string s)
+        {
+            UnityEngine.Debug.Log(string.Format("[Test]{0}", s));
+        }
         void Check()
         {
+            fuiComponent = new ETModel.FUIComponent();
+            fuiPackageComponent = new ETModel.FUIPackageComponent();
             Assets.Initialize(delegate
             {
                 var path = Utility.GetRelativePath4Update(versionsTxt);
+                Log(string.Format("Init Success->persistent version path {0}", path));
+                //检测可更新目录 是否存在 版本文件
                 if (!File.Exists(path))
                 {
+                    //可更新目录不存在版本文件，从 StreamingAssets 目录中找
                     var asset = Assets.LoadAsync(Utility.GetWebUrlFromDataPath(versionsTxt), typeof(TextAsset));
                     asset.completed += delegate
                     {
@@ -117,8 +138,10 @@ namespace Plugins.XAsset
                         var dir = Path.GetDirectoryName(path);
                         if (!Directory.Exists(dir))
                             Directory.CreateDirectory(dir);
+                        //将 StreamingAssets 中的版本文件 写入可更新目录中，并加载
                         File.WriteAllText(path, asset.text);
                         LoadVersions(asset.text);
+
                         asset.Release();
                     };
                 }
@@ -134,7 +157,7 @@ namespace Plugins.XAsset
         private void Start()
         {
             state = State.Wait;
-            Versions.Load(); 
+            Versions.Load();
         }
 
         private void Update()
@@ -180,6 +203,13 @@ namespace Plugins.XAsset
                 go.name = asset.asset.name;
                 asset.Require(go);
                 Destroy(go, 3);
+                //asset.Release();
+            }
+            else if (asset.name.Contains("Model"))
+            {
+                //FairyGUI.UIPackage.AddPackage(asset.bund);
+                var obj = FairyGUI.UIPackage.CreateObject("Model", "Loading");
+                FairyGUI.GRoot.inst.AddChild(obj);
             }
 
             loadedAssets.Add(asset);
@@ -202,8 +232,8 @@ namespace Plugins.XAsset
                     case State.Completed:
                         if (GUILayout.Button("Clear"))
                         {
-                            Clear(); 
-                        } 
+                            Clear();
+                        }
                         break;
                     default:
                         break;
@@ -224,10 +254,25 @@ namespace Plugins.XAsset
                     using (var h = new GUILayout.HorizontalScope())
                     {
                         assetPath = GUILayout.TextField(assetPath, GUILayout.Width(256));
-                        if (GUILayout.Button("Load"))
+                        if (assetPath.Contains("FUI"))
                         {
-                            var asset = Assets.Load(assetPath, typeof(UnityEngine.Object));
-                            asset.completed += OnAssetLoaded;
+                            if (GUILayout.Button("AddPackage"))
+                            {
+                                fuiPackageComponent.AddPackage(assetPath);
+                                ETModel.FUI fui = new ETModel.FUI();
+                                fui.Awake(FairyGUI.UIPackage.CreateObject("Model", "Loading"));
+                                fui.Name = assetPath;
+                                fuiComponent.Add(fui);
+                            }
+                        }
+                        else
+                        {
+                            if (GUILayout.Button("Load"))
+                            {
+                                var asset = Assets.Load(assetPath, typeof(UnityEngine.Object));
+                                asset.completed += OnAssetLoaded;
+
+                            }
                         }
 
                         if (GUILayout.Button("LoadAsync"))
@@ -259,7 +304,7 @@ namespace Plugins.XAsset
                         for (int i = 0; i < loadedAssets.Count; i++)
                         {
                             var item = loadedAssets[i];
-                            using (var h = new GUILayout.HorizontalScope())
+                            using (var hor = new GUILayout.HorizontalScope())
                             {
                                 GUILayout.Label(item.name);
                                 if (GUILayout.Button("Unload"))
@@ -271,6 +316,19 @@ namespace Plugins.XAsset
                             }
                         }
                     }
+                    foreach (var child in fuiComponent.Root.Children.Values)
+                    {
+                        using (var hor = new GUILayout.HorizontalScope())
+                        {
+                            GUILayout.Label(child.Name);
+                            if (GUILayout.Button("Remove"))
+                            {
+                                //.RemovePackage(child.Name);
+                                fuiComponent.Remove(child.Name);
+                            }
+                        }
+                    }
+
                 }
             }
         }
@@ -279,6 +337,7 @@ namespace Plugins.XAsset
         {
             Versions.Save();
 
+            //替换本地文件列表中的 文件
             if (_downloads.Count > 0)
             {
                 for (int i = 0; i < _downloads.Count; i++)
@@ -309,8 +368,9 @@ namespace Plugins.XAsset
                     File.Delete(path);
                 }
 
+                //重新写入可读写目录中的版本文件
                 File.WriteAllText(path, sb.ToString());
-                Assets.Initialize(delegate 
+                Assets.Initialize(delegate
                 {
                     if (completed != null)
                     {
@@ -342,7 +402,10 @@ namespace Plugins.XAsset
         private void LoadVersions(string text)
         {
             LoadText2Map(text, ref _versions);
-            var asset = Assets.LoadAsync(Utility.GetDownloadURL(versionsTxt), typeof(TextAsset));
+            var path = Utility.GetDownloadURL(versionsTxt);
+            Log(string.Format("LoadVersions->downloadUrl {0}", path));
+            //加载远程服务器 版本文件
+            var asset = Assets.LoadAsync(path, typeof(TextAsset));
             asset.completed += delegate
             {
                 if (asset.error != null)
@@ -352,6 +415,8 @@ namespace Plugins.XAsset
                 }
 
                 LoadText2Map(asset.text, ref _serverVersions);
+
+                //对比两个版本文件，将需要下载的加入列表
                 foreach (var item in _serverVersions)
                 {
                     string ver;
@@ -361,6 +426,7 @@ namespace Plugins.XAsset
                         downloader.url = Utility.GetDownloadURL(item.Key);
                         downloader.path = item.Key;
                         downloader.version = item.Value;
+                        //下载文件的保存路径，直接存到可读写路径中区
                         downloader.savePath = Utility.GetRelativePath4Update(item.Key);
                         _downloads.Add(downloader);
                     }
@@ -372,6 +438,7 @@ namespace Plugins.XAsset
                 }
                 else
                 {
+                    //平台bundle 文件
                     var downloader = new Download();
                     downloader.url = Utility.GetDownloadURL(Utility.GetPlatform());
                     downloader.path = Utility.GetPlatform();
@@ -379,9 +446,12 @@ namespace Plugins.XAsset
                     _downloads.Add(downloader);
                     Download();
                 }
+
+                asset.Release();
             };
         }
 
+        //将版本文件中的信息 存在map 中
         private static void LoadText2Map(string text, ref Dictionary<string, string> map)
         {
             map.Clear();
