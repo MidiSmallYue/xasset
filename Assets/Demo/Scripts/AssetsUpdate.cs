@@ -63,7 +63,7 @@ namespace Plugins.XAsset
         [SerializeField] string versionsTxt = "versions.txt";
 
         private string fguiPath = "Demo/FUI/UI/Model";
-        private List<FairyGUI.GObject> fguiObjs = new List<FairyGUI.GObject>();
+        private List<string> needRemoveFuiNames = new List<string>();
         private ETModel.FUIPackageComponent fuiPackageComponent;
         private ETModel.FUIComponent fuiComponent;
 
@@ -316,19 +316,31 @@ namespace Plugins.XAsset
                             }
                         }
                     }
-                    foreach (var child in fuiComponent.Root.Children.Values)
+                    if (fuiComponent.Root.Children.Count > 0)
                     {
-                        using (var hor = new GUILayout.HorizontalScope())
+                        foreach (var child in fuiComponent.Root.Children.Values)
                         {
-                            GUILayout.Label(child.Name);
-                            if (GUILayout.Button("Remove"))
+                            using (var hor = new GUILayout.HorizontalScope())
                             {
-                                //.RemovePackage(child.Name);
-                                fuiComponent.Remove(child.Name);
+                                var childName = child.Name;
+                                GUILayout.Label(childName);
+                                if (GUILayout.Button("Remove"))
+                                {
+                                    //.RemovePackage(child.Name);
+                                    needRemoveFuiNames.Clear();
+                                    needRemoveFuiNames.Add(childName);
+                                }
+                            }
+                        }
+                        if (needRemoveFuiNames.Count > 0)
+                        {
+                            for (int i = needRemoveFuiNames.Count - 1; i >= 0; i--)
+                            {
+                                fuiComponent.Remove(needRemoveFuiNames[i]);
+                                needRemoveFuiNames.Remove(needRemoveFuiNames[i]);
                             }
                         }
                     }
-
                 }
             }
         }

@@ -36,10 +36,13 @@ namespace Plugins.XAsset
     public class Assets : MonoBehaviour
     {
         private static string[] _bundles = new string[0];
+
         private static Dictionary<string, int> _bundleAssets = new Dictionary<string, int>();
 
         // ReSharper disable once InconsistentNaming
         private static readonly List<Asset> _assets = new List<Asset>();
+
+        public static List<Asset> assets { get { return _assets; } }
 
         // ReSharper disable once InconsistentNaming
         private static readonly List<Asset> _unusedAssets = new List<Asset>();

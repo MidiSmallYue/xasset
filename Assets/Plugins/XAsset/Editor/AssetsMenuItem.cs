@@ -46,27 +46,13 @@ namespace Plugins.XAsset.Editor
         [InitializeOnLoadMethod]
         private static void OnInitialize()
         {
-            Debug.Log("test");
             EditorUtility.ClearProgressBar();
             var settings = BuildScript.GetSettings(); 
             if (settings.localServer)
             {
-                bool isRunning = LaunchLocalServer.IsRunning();
-                if (!isRunning)
-                {
-                    Debug.Log("run server");
-                    LaunchLocalServer.Run();
-                }
+                Debug.Log("请确认资源服务器保持开启状态 ../AssetServer/hfs.exe");
             }
-            else
-            {
-                bool isRunning = LaunchLocalServer.IsRunning();
-                if (isRunning)
-                {
-                    LaunchLocalServer.KillRunningAssetBundleServer();
-                    Debug.Log("close server");
-                }
-            }
+            
             //Utility.dataPath = System.Environment.CurrentDirectory;
             Utility.downloadURL = BuildScript.GetManifest().downloadURL;
             Utility.assetBundleMode = settings.runtimeMode;

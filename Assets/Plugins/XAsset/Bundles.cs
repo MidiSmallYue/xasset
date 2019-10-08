@@ -34,18 +34,20 @@ namespace Plugins.XAsset
 {
 	public delegate string OverrideDataPathDelegate (string bundleName);
 
-	public static class Bundles
-	{
-		private static readonly int MAX_LOAD_SIZE_PERFREME = 3;
-		// ReSharper disable once InconsistentNaming
-		private static readonly List<Bundle> _bundles = new List<Bundle> ();
+    public static class Bundles
+    {
+        private static readonly int MAX_LOAD_SIZE_PERFREME = 3;
+        // ReSharper disable once InconsistentNaming
+        private static readonly List<Bundle> _bundles = new List<Bundle>();
 
-		// ReSharper disable once InconsistentNaming
-		private static readonly List<Bundle> _unusedBundles = new List<Bundle> ();
+        public static List<Bundle> bundles { get { return _bundles; } }
+
+        // ReSharper disable once InconsistentNaming
+        private static readonly List<Bundle> _unusedBundles = new List<Bundle> ();
 
 		private static readonly List<Bundle> _ready2Load = new List<Bundle> ();
 
-		private static readonly List<Bundle> _loading = new List<Bundle> ();
+        private static readonly List<Bundle> _loading = new List<Bundle> ();
 
 		public static string[] activeVariants { get; set; }
 
@@ -55,7 +57,10 @@ namespace Plugins.XAsset
 
 		public static event OverrideDataPathDelegate OverrideBaseDownloadingUrl;
 
-		public static string[] GetAllDependencies (string bundle)
+        public static  List<Bundle> unusedBundles { get { return _unusedBundles; } }
+        public static  List<Bundle> loading  { get{ return _loading; } }
+
+        public static string[] GetAllDependencies (string bundle)
 		{
 			return manifest == null ? null : manifest.GetAllDependencies (bundle);
 		}
