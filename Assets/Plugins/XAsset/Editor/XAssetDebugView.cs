@@ -16,7 +16,7 @@ public class XAssetDebugView : EditorWindow
     private static int oldBundleCount;
     private static int oldAssetBundleCount;
 
-    [MenuItem("Tool/Test List")]
+    [MenuItem("Tool/XAsset RefCount")]
     private static void Init()
     {
         var re = new Rect(0, 0, 1000, 700);

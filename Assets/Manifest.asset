@@ -12,64 +12,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6951743adb93844fcb5ddf53e02547c9, type: 3}
   m_Name: Manifest
   m_EditorClassIdentifier: 
-  downloadURL: http://192.168.31.25/
+  downloadURL: http://127.0.0.1:7888/
   activeVariants: []
   bundles:
-  - scenes_g
-  - sprites_g
-  - prefabs_g
-  - fui/ui_g
-  - fui/font_g
   - manifest
+  - prefabs
+  - sprites
   dirs:
-  - Assets/Demo/Scenes
-  - Assets/Demo/Sprites
-  - Assets/Demo/Prefabs
-  - Assets/Demo/FUI/UI
-  - Assets/Demo/FUI/Font
   - Assets
+  - Assets/Demo/Prefabs
+  - Assets/Demo/Sprites
   assets:
-  - variant: -1
-    bundle: 0
+  - bundle: 0
     dir: 0
-    name: Test.unity
-  - variant: -1
-    bundle: 1
-    dir: 1
-    name: UnityLogo.png
-  - variant: -1
-    bundle: 2
-    dir: 2
-    name: UIRoot2.prefab
-  - variant: -1
-    bundle: 2
-    dir: 2
-    name: UIRoot.prefab
-  - variant: -1
-    bundle: 1
-    dir: 1
-    name: blackSquare.png
-  - variant: -1
-    bundle: 0
-    dir: 0
-    name: Init.unity
-  - variant: -1
-    bundle: 3
-    dir: 3
-    name: Model_atlas0!a.png
-  - variant: -1
-    bundle: 3
-    dir: 3
-    name: Model_atlas0.png
-  - variant: -1
-    bundle: 3
-    dir: 3
-    name: Model_fui.bytes
-  - variant: -1
-    bundle: 4
-    dir: 4
-    name: FZXuanZhenZhuanBianS-R-GB.TTF
-  - variant: -1
-    bundle: 5
-    dir: 5
     name: Manifest.asset
+  - bundle: 1
+    dir: 1
+    name: UIRoot.prefab
+  - bundle: 1
+    dir: 1
+    name: UIRoot2.prefab
+  - bundle: 2
+    dir: 2
+    name: blackSquare.png
+  - bundle: 2
+    dir: 2
+    name: log2.png
+  - bundle: 2
+    dir: 2
+    name: log3.png
+  - bundle: 2
+    dir: 2
+    name: UnityLogo.png
